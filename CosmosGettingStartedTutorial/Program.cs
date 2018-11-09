@@ -11,7 +11,7 @@ namespace CosmosGettingStartedTutorial
     class Program
     {
         // The Azure Cosmos DB endpoint for running this sample.
-        private static readonly string EndpointUri = ConfigurationManager.AppSettings["EndPointUrl"];
+        private static readonly string EndpointUri = ConfigurationManager.AppSettings["EndPointUri"];
 
         // The primary key for the Azure Cosmos account.
         private static readonly string PrimaryKey = ConfigurationManager.AppSettings["PrimaryKey"];
