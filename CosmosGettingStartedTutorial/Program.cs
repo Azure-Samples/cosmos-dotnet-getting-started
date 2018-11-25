@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using System.Configuration;
 using Microsoft.Azure.Cosmos;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Net;
 
