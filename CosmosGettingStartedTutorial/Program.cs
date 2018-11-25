@@ -28,13 +28,14 @@ namespace CosmosGettingStartedTutorial
         // The name of the database and container we will create
         private string databaseId = "FamilyDatabase";
         private string containerId = "FamilyContainer";
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             try
             {
                 Console.WriteLine("Beginning operations...\n");
                 Program p = new Program();
-                p.GetStartedDemo().GetAwaiter().GetResult();
+                await p.GetStartedDemoAsync();
+
             }
             catch (CosmosRequestException de)
             {
@@ -55,7 +56,7 @@ namespace CosmosGettingStartedTutorial
         /*
             Entry point to call methods that operate on Azure Cosmos DB resources in this sample
         */
-        public async Task GetStartedDemo()
+        public async Task GetStartedDemoAsync()
         {
             // Create a new instance of the Cosmos Client
             this.cosmosClient = new CosmosClient(EndpointUri, PrimaryKey);
@@ -65,7 +66,7 @@ namespace CosmosGettingStartedTutorial
             await this.RunQuery();
             await this.ReplaceFamilyItem();
             await this.DeleteFamilyItem();
-            await this.DeleteDatabase();
+            await this.DeleteDatabaseAndCleanup();
         }
 
         /*
@@ -121,7 +122,7 @@ namespace CosmosGettingStartedTutorial
                 IsRegistered = false
             };
 
-            // Read the item to see if it exists
+            // Read the item to see if it exists. Note ReadItemAsync will not throw an exception if an item does not exist. Instead, we check the StatusCode property off the response object. 
             CosmosItemResponse<Family> andersenFamilyResponse = await this.container.Items.ReadItemAsync<Family>(andersenFamily.LastName, andersenFamily.Id);
 
             if (andersenFamilyResponse.StatusCode == HttpStatusCode.NotFound)
@@ -248,14 +249,17 @@ namespace CosmosGettingStartedTutorial
         }
 
         /*
-        Delete the database
+        Delete the database and dispose of the Cosmos Client instance
         */
-        private async Task DeleteDatabase()
+        private async Task DeleteDatabaseAndCleanup()
         {
             CosmosDatabaseResponse databaseResourceResponse = await this.database.DeleteAsync();
             // Also valid: await this.cosmosClient.Databases["FamilyDatabase"].DeleteAsync();
 
             Console.WriteLine("Deleted Database: {0}\n", this.databaseId);
+
+            //Dispose of CosmosClient
+            this.cosmosClient.Dispose();
         }
     }
 }
