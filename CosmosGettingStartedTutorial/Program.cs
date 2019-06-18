@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Configuration;
-using Microsoft.Azure.Cosmos;
 using System.Collections.Generic;
 using System.Net;
+using Microsoft.Azure.Cosmos;
 
 namespace CosmosGettingStartedTutorial
 {
@@ -27,6 +27,7 @@ namespace CosmosGettingStartedTutorial
         // The name of the database and container we will create
         private string databaseId = "FamilyDatabase";
         private string containerId = "FamilyContainer";
+
         public static async Task Main(string[] args)
         {
             try
@@ -59,19 +60,19 @@ namespace CosmosGettingStartedTutorial
         {
             // Create a new instance of the Cosmos Client
             this.cosmosClient = new CosmosClient(EndpointUri, PrimaryKey);
-            await this.CreateDatabase();
-            await this.CreateContainer();
-            await this.AddItemsToContainer();
-            await this.RunQuery();
-            await this.ReplaceFamilyItem();
-            await this.DeleteFamilyItem();
-            await this.DeleteDatabaseAndCleanup();
+            await this.CreateDatabaseAsync();
+            await this.CreateContainerAsync();
+            await this.AddItemsToContainerAsync();
+            await this.QueryItemsAsync();
+            await this.ReplaceFamilyItemAsync();
+            await this.DeleteFamilyItemAsync();
+            await this.DeleteDatabaseAndCleanupAsync();
         }
 
         /*
             Create the database if it does not exist
         */
-        private async Task CreateDatabase()
+        private async Task CreateDatabaseAsync()
         {
             // Create a new database
             this.database = await this.cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId);
@@ -82,7 +83,7 @@ namespace CosmosGettingStartedTutorial
         Create the container if it does not exist. 
         Specifiy "/LastName" as the partition key since we're storing family information, to ensure good distribution of requests and storage.
         */
-        private async Task CreateContainer()
+        private async Task CreateContainerAsync()
         {
             // Create a new container
             this.container = await this.database.CreateContainerIfNotExistsAsync(containerId, "/LastName");
@@ -92,7 +93,7 @@ namespace CosmosGettingStartedTutorial
         /*
             Add Family items to the container
         */
-        private async Task AddItemsToContainer()
+        private async Task AddItemsToContainerAsync()
         {
             // Create a family object for the Andersen family
             Family andersenFamily = new Family
@@ -193,7 +194,7 @@ namespace CosmosGettingStartedTutorial
         /*
             Run a query (using Azure Cosmos DB SQL syntax) against the container
         */
-        private async Task RunQuery()
+        private async Task QueryItemsAsync()
         {
             var sqlQueryText = "SELECT * FROM c WHERE c.LastName = 'Andersen'";
 
@@ -218,7 +219,7 @@ namespace CosmosGettingStartedTutorial
         /*
         Update an item in the container
         */
-        private async Task ReplaceFamilyItem()
+        private async Task ReplaceFamilyItemAsync()
         {
             ItemResponse<Family> wakefieldFamilyResponse = await this.container.ReadItemAsync<Family>("Wakefield.7", new PartitionKey("Wakefield"));
             var itemBody = wakefieldFamilyResponse.Resource;
@@ -236,7 +237,7 @@ namespace CosmosGettingStartedTutorial
         /*
         Delete an item in the container
         */
-        private async Task DeleteFamilyItem()
+        private async Task DeleteFamilyItemAsync()
         {
             var partitionKeyValue = "Wakefield";
             var familyId = "Wakefield.7";
@@ -249,7 +250,7 @@ namespace CosmosGettingStartedTutorial
         /*
         Delete the database and dispose of the Cosmos Client instance
         */
-        private async Task DeleteDatabaseAndCleanup()
+        private async Task DeleteDatabaseAndCleanupAsync()
         {
             DatabaseResponse databaseResourceResponse = await this.database.DeleteAsync();
             // Also valid: await this.cosmosClient.Databases["FamilyDatabase"].DeleteAsync();
