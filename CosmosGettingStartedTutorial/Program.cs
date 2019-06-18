@@ -19,10 +19,10 @@ namespace CosmosGettingStartedTutorial
         private CosmosClient cosmosClient;
 
         // The database we will create
-        private CosmosDatabase database;
+        private Database database;
 
         // The container we will create.
-        private CosmosContainer container;
+        private Container container;
 
         // The name of the database and container we will create
         private string databaseId = "FamilyDatabase";
@@ -74,7 +74,7 @@ namespace CosmosGettingStartedTutorial
         private async Task CreateDatabase()
         {
             // Create a new database
-            this.database = await this.cosmosClient.Databases.CreateDatabaseIfNotExistsAsync(databaseId);
+            this.database = await this.cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId);
             Console.WriteLine("Created Database: {0}\n", this.database.Id);
         }
 
@@ -85,7 +85,7 @@ namespace CosmosGettingStartedTutorial
         private async Task CreateContainer()
         {
             // Create a new container
-            this.container = await this.database.Containers.CreateContainerIfNotExistsAsync(containerId, "/LastName");
+            this.container = await this.database.CreateContainerIfNotExistsAsync(containerId, "/LastName");
             Console.WriteLine("Created Container: {0}\n", this.container.Id);
         }
 
@@ -122,12 +122,12 @@ namespace CosmosGettingStartedTutorial
             };
 
             // Read the item to see if it exists. Note ReadItemAsync will not throw an exception if an item does not exist. Instead, we check the StatusCode property off the response object. 
-            CosmosItemResponse<Family> andersenFamilyResponse = await this.container.Items.ReadItemAsync<Family>(andersenFamily.LastName, andersenFamily.Id);
+            ItemResponse<Family> andersenFamilyResponse = await this.container.ReadItemAsync<Family>(andersenFamily.Id, new PartitionKey(andersenFamily.LastName));
 
             if (andersenFamilyResponse.StatusCode == HttpStatusCode.NotFound)
             {
                 // Create an item in the container representing the Andersen family. Note we provide the value of the partition key for this item, which is "Andersen"
-                andersenFamilyResponse = await this.container.Items.CreateItemAsync<Family>(andersenFamily.LastName, andersenFamily);
+                andersenFamilyResponse = await this.container.CreateItemAsync<Family>(andersenFamily, new PartitionKey(andersenFamily.LastName));
 
                 // Note that after creating the item, we can access the body of the item with the Resource property off the CosmosItemResponse. We can also access the RequestCharge property to see the amount of RUs consumed on this request.
                 Console.WriteLine("Created item in database with id: {0} Operation consumed {1} RUs.\n", andersenFamilyResponse.Resource.Id, andersenFamilyResponse.RequestCharge);
@@ -174,12 +174,12 @@ namespace CosmosGettingStartedTutorial
             };
 
             // Read the item to see if it exists
-            CosmosItemResponse<Family> wakefieldFamilyResponse = await this.container.Items.ReadItemAsync<Family>(wakefieldFamily.LastName, wakefieldFamily.Id);
+            ItemResponse<Family> wakefieldFamilyResponse = await this.container.ReadItemAsync<Family>(wakefieldFamily.Id, new PartitionKey(wakefieldFamily.LastName));
 
             if (wakefieldFamilyResponse.StatusCode == HttpStatusCode.NotFound)
             {
                 // Create an item in the container representing the Wakefield family. Note we provide the value of the partition key for this item, which is "Wakefield"
-                wakefieldFamilyResponse = await this.container.Items.CreateItemAsync<Family>(wakefieldFamily.LastName, wakefieldFamily);
+                wakefieldFamilyResponse = await this.container.CreateItemAsync<Family>(wakefieldFamily, new PartitionKey(wakefieldFamily.LastName));
 
                 // Note that after creating the item, we can access the body of the item with the Resource property off the CosmosItemResponse. We can also access the RequestCharge property to see the amount of RUs consumed on this request.
                 Console.WriteLine("Created item in database with id: {0} Operation consumed {1} RUs.\n", wakefieldFamilyResponse.Resource.Id, wakefieldFamilyResponse.RequestCharge);
@@ -196,18 +196,17 @@ namespace CosmosGettingStartedTutorial
         private async Task RunQuery()
         {
             var sqlQueryText = "SELECT * FROM c WHERE c.LastName = 'Andersen'";
-            var partitionKeyValue = "Andersen";
 
             Console.WriteLine("Running query: {0}\n", sqlQueryText);
 
-            CosmosSqlQueryDefinition queryDefinition = new CosmosSqlQueryDefinition(sqlQueryText);
-            CosmosResultSetIterator<Family> queryResultSetIterator = this.container.Items.CreateItemQuery<Family>(queryDefinition, partitionKeyValue);
+            QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+            FeedIterator<Family> queryResultSetIterator = this.container.GetItemQueryIterator<Family>(queryDefinition);
 
             List<Family> families = new List<Family>();
 
             while (queryResultSetIterator.HasMoreResults)
             {
-                CosmosQueryResponse<Family> currentResultSet = await queryResultSetIterator.FetchNextSetAsync();
+                FeedResponse<Family> currentResultSet = await queryResultSetIterator.ReadNextAsync();
                 foreach (Family family in currentResultSet)
                 {
                     families.Add(family);
@@ -221,7 +220,7 @@ namespace CosmosGettingStartedTutorial
         */
         private async Task ReplaceFamilyItem()
         {
-            CosmosItemResponse<Family> wakefieldFamilyResponse = await this.container.Items.ReadItemAsync<Family>("Wakefield", "Wakefield.7");
+            ItemResponse<Family> wakefieldFamilyResponse = await this.container.ReadItemAsync<Family>("Wakefield.7", new PartitionKey("Wakefield"));
             var itemBody = wakefieldFamilyResponse.Resource;
             
             // update registration status from false to true
@@ -230,7 +229,7 @@ namespace CosmosGettingStartedTutorial
             itemBody.Children[0].Grade = 6;
 
             // replace the item with the updated content
-            wakefieldFamilyResponse = await this.container.Items.ReplaceItemAsync<Family>(itemBody.LastName, itemBody.Id, itemBody);
+            wakefieldFamilyResponse = await this.container.ReplaceItemAsync<Family>(itemBody, itemBody.Id, new PartitionKey(itemBody.LastName));
             Console.WriteLine("Updated Family [{0},{1}].\n \tBody is now: {2}\n", itemBody.LastName, itemBody.Id, wakefieldFamilyResponse.Resource);
         }
 
@@ -243,7 +242,7 @@ namespace CosmosGettingStartedTutorial
             var familyId = "Wakefield.7";
 
             // Delete an item. Note we must provide the partition key value and id of the item to delete
-            CosmosItemResponse<Family> wakefieldFamilyResponse = await this.container.Items.DeleteItemAsync<Family>(partitionKeyValue, familyId);
+            ItemResponse<Family> wakefieldFamilyResponse = await this.container.DeleteItemAsync<Family>(familyId,new PartitionKey(partitionKeyValue));
             Console.WriteLine("Deleted Family [{0},{1}]\n", partitionKeyValue, familyId);
         }
 
@@ -252,7 +251,7 @@ namespace CosmosGettingStartedTutorial
         */
         private async Task DeleteDatabaseAndCleanup()
         {
-            CosmosDatabaseResponse databaseResourceResponse = await this.database.DeleteAsync();
+            DatabaseResponse databaseResourceResponse = await this.database.DeleteAsync();
             // Also valid: await this.cosmosClient.Databases["FamilyDatabase"].DeleteAsync();
 
             Console.WriteLine("Deleted Database: {0}\n", this.databaseId);
