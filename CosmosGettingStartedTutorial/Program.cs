@@ -191,6 +191,7 @@ namespace CosmosGettingStartedTutorial
             }
         }
 
+        // <QueryItemsAsync_snippet>
         /*
             Run a query (using Azure Cosmos DB SQL syntax) against the container
         */
@@ -215,6 +216,7 @@ namespace CosmosGettingStartedTutorial
                 }
             }
         }
+        // </QueryItemsAsync_snippet>
 
         /*
         Update an item in the container
