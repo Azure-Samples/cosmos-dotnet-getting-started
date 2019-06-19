@@ -191,10 +191,10 @@ namespace CosmosGettingStartedTutorial
             }
         }
 
-        // <QueryItemsAsync_snippet>
-        /*
-            Run a query (using Azure Cosmos DB SQL syntax) against the container
-        */
+        /// <QueryItemsAsync_snippet>
+        /// <summary>
+        /// Run a query (using Azure Cosmos DB SQL syntax) against the container
+        /// </summary>
         private async Task QueryItemsAsync()
         {
             var sqlQueryText = "SELECT * FROM c WHERE c.LastName = 'Andersen'";
@@ -216,8 +216,9 @@ namespace CosmosGettingStartedTutorial
                 }
             }
         }
-        // </QueryItemsAsync_snippet>
+        /// </QueryItemsAsync_snippet>
 
+        // <ReplaceFamilyItemAsync_snippet>
         /*
         Update an item in the container
         */
@@ -235,7 +236,9 @@ namespace CosmosGettingStartedTutorial
             wakefieldFamilyResponse = await this.container.ReplaceItemAsync<Family>(itemBody, itemBody.Id, new PartitionKey(itemBody.LastName));
             Console.WriteLine("Updated Family [{0},{1}].\n \tBody is now: {2}\n", itemBody.LastName, itemBody.Id, wakefieldFamilyResponse.Resource);
         }
+        // </ReplaceFamilyItemAsync_snippet>
 
+        // <DeleteFamilyItemAsync_snippet>
         /*
         Delete an item in the container
         */
@@ -248,6 +251,7 @@ namespace CosmosGettingStartedTutorial
             ItemResponse<Family> wakefieldFamilyResponse = await this.container.DeleteItemAsync<Family>(familyId,new PartitionKey(partitionKeyValue));
             Console.WriteLine("Deleted Family [{0},{1}]\n", partitionKeyValue, familyId);
         }
+        // </DeleteFamilyItemAsync_snippet>
 
         /*
         Delete the database and dispose of the Cosmos Client instance
