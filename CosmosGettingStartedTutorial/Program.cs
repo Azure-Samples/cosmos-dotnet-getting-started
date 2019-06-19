@@ -231,7 +231,7 @@ namespace CosmosGettingStartedTutorial
 
         // <ReplaceFamilyItemAsync>
         /// <summary>
-        /// Update an item in the container
+        /// Replace an item in the container
         /// </summary>
         private async Task ReplaceFamilyItemAsync()
         {
