@@ -1,7 +1,11 @@
 ---
-services: cosmos-db
-platforms: dotnet
-author: deborahc
+languages:
+- csharp
+products:
+- azure
+- azure-cosmos-db
+page_type: sample
+description: "This sample shows you how to use the Azure Cosmos DB service to store and access data from a .NET console application."
 ---
 
 # Developing a .NET console app using Azure Cosmos DB
