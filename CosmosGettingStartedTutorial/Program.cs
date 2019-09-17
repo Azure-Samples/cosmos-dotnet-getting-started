@@ -134,7 +134,7 @@ namespace CosmosGettingStartedTutorial
 
             try
             {
-                // Read the item to see if it exists. Note ReadItemAsync will not throw an exception if an item does not exist. Instead, we check the StatusCode property off the response object. 
+                // Read the item to see if it exists.  
                 ItemResponse<Family> andersenFamilyResponse = await this.container.ReadItemAsync<Family>(andersenFamily.Id, new PartitionKey(andersenFamily.LastName));
                 Console.WriteLine("Item in database with id: {0} already exists\n", andersenFamilyResponse.Resource.Id);
             }
