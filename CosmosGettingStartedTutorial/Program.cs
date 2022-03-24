@@ -38,10 +38,9 @@ namespace CosmosGettingStartedTutorial
                 await p.GetStartedDemoAsync();
 
             }
-            catch (CosmosException de)
+            catch (CosmosException cosmosException)
             {
-                Exception baseException = de.GetBaseException();
-                Console.WriteLine("{0} error occurred: {1}", de.StatusCode, de);
+                Console.WriteLine("Cosmos Exception with Status {0} : {1}\n", cosmosException.StatusCode, cosmosException);
             }
             catch (Exception e)
             {
@@ -211,7 +210,7 @@ namespace CosmosGettingStartedTutorial
             Console.WriteLine("Running query: {0}\n", sqlQueryText);
 
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
-            FeedIterator<Family> queryResultSetIterator = this.container.GetItemQueryIterator<Family>(queryDefinition);
+            using FeedIterator<Family> queryResultSetIterator = this.container.GetItemQueryIterator<Family>(queryDefinition);
 
             List<Family> families = new List<Family>();
 
